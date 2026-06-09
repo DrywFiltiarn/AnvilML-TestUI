@@ -1,6 +1,6 @@
 {
   "name": "anvilml-testui",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "",
   "scripts": {
     "serve": "npx serve -l 8848 ."
