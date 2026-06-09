@@ -205,6 +205,78 @@ async function handleWorkersRestart() {
 // ============================================================================
 // Jobs panel handlers will be added in Phase 003.
 
+async function handleJobReset() {
+  const pipeline = document.getElementById("jobs-pipeline").value;
+  document.getElementById("jobs-body").value = getTemplate(pipeline);
+}
+
+async function handleJobSubmit() {
+  const raw = document.getElementById("jobs-body").value.trim();
+  if (!raw) {
+    showResponse("jobs-response", { error: "empty_body", message: "Request body is empty" }, false);
+    return;
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (e) {
+    showResponse("jobs-response", { error: "json_parse_error", message: e.message }, false);
+    return;
+  }
+  const data = await apiFetch("/v1/jobs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: raw,
+  });
+  showResponse("jobs-response", data.data, data.ok);
+  if (data.ok && data.data && data.data.job_id) {
+    document.getElementById("jobs-job-id").value = data.data.job_id;
+  }
+}
+
+async function handleJobsList() {
+  const status = document.getElementById("jobs-status-filter").value;
+  const path = "/v1/jobs" + (status ? "?status=" + status : "");
+  const { ok, data } = await apiFetch(path);
+  showResponse("jobs-response", data, ok);
+}
+
+async function handleJobsGet() {
+  const id = document.getElementById("jobs-job-id").value;
+  if (!id) {
+    showResponse("jobs-response", { error: "id_required", message: "Enter a job ID" }, false);
+    return;
+  }
+  const { ok, data } = await apiFetch("/v1/jobs/" + id);
+  showResponse("jobs-response", data, ok);
+}
+
+async function handleJobsCancel() {
+  const id = document.getElementById("jobs-job-id").value;
+  if (!id) {
+    showResponse("jobs-response", { error: "id_required", message: "Enter a job ID" }, false);
+    return;
+  }
+  const { ok, data } = await apiFetch("/v1/jobs/" + id + "/cancel", { method: "POST" });
+  showResponse("jobs-response", data, ok);
+}
+
+async function handleJobsDelete() {
+  const id = document.getElementById("jobs-job-id").value;
+  if (!id) {
+    showResponse("jobs-response", { error: "id_required", message: "Enter a job ID" }, false);
+    return;
+  }
+  const { ok, data } = await apiFetch("/v1/jobs/" + id, { method: "DELETE" });
+  showResponse("jobs-response", data, ok);
+}
+
+async function handleJobsBulkClear() {
+  const status = document.getElementById("jobs-bulk-status").value;
+  const { ok, data } = await apiFetch("/v1/jobs?status=" + status, { method: "DELETE" });
+  showResponse("jobs-response", data, ok);
+}
+
 // ============================================================================
 // PANEL: ARTIFACTS
 // ============================================================================
@@ -270,4 +342,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const workersRestartBtn = document.getElementById("workers-restart-btn");
   if (workersRestartBtn) workersRestartBtn.addEventListener("click", handleWorkersRestart);
+
+  // Jobs panel
+  document.getElementById("jobs-body").value = getTemplate("zit");
+
+  const jobsPipelineEl = document.getElementById("jobs-pipeline");
+  if (jobsPipelineEl) jobsPipelineEl.addEventListener("change", handleJobReset);
+
+  const jobsResetBtn = document.getElementById("jobs-reset-btn");
+  if (jobsResetBtn) jobsResetBtn.addEventListener("click", handleJobReset);
+
+  const jobsSubmitBtn = document.getElementById("jobs-submit-btn");
+  if (jobsSubmitBtn) jobsSubmitBtn.addEventListener("click", handleJobSubmit);
+
+  const jobsListBtn = document.getElementById("jobs-list-btn");
+  if (jobsListBtn) jobsListBtn.addEventListener("click", handleJobsList);
+
+  const jobsGetBtn = document.getElementById("jobs-get-btn");
+  if (jobsGetBtn) jobsGetBtn.addEventListener("click", handleJobsGet);
+
+  const jobsCancelBtn = document.getElementById("jobs-cancel-btn");
+  if (jobsCancelBtn) jobsCancelBtn.addEventListener("click", handleJobsCancel);
+
+  const jobsDeleteBtn = document.getElementById("jobs-delete-btn");
+  if (jobsDeleteBtn) jobsDeleteBtn.addEventListener("click", handleJobsDelete);
+
+  const jobsBulkClearBtn = document.getElementById("jobs-bulk-clear-btn");
+  if (jobsBulkClearBtn) jobsBulkClearBtn.addEventListener("click", handleJobsBulkClear);
 });

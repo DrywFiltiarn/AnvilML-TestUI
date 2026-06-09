@@ -7,16 +7,17 @@
     "P2-A1",
     "P2-B1",
     "P3-A1",
-    "P3-B1"
+    "P3-B1",
+    "P3-C1"
   ],
-  "in_progress": "P3-C1",
+  "in_progress": "P3-D1",
   "plan_approved": true,
-  "current_plan": "1. **Read the existing Jobs panel stub** in `index.html` (lines 62\u201385). The stub currently has a `<h3>Coming in Phase 003</h3>` header and a minimal set of elements with placeholder select options.\n\n2. **Remove the existing stub content** between `<details id=\"jobs-panel\">` and `</details>`, replacing it with the full panel structure.\n\n3. **Write the four sub-sections** in order:\n   - **Submission section:** label \"Pipeline\", select `#jobs-pipeline` with options `zit` (\"ZiT (distilled)\") and `sdxl` (\"SDXL\") defaulting to `zit`; button `#jobs-reset-btn` (\"Reset Template\"); label \"Request body (JSON)\" above textarea `#jobs-body` (rows=20); button `#jobs-submit-btn` (\"Submit Job\").\n   - **List section:** `<hr>` separator; label \"Status filter\", select `#jobs-status-filter` with options `\"\"` (\"all statuses\"), `queued`, `running`, `completed`, `failed`, `cancelled`; button `#jobs-list-btn` (\"List Jobs\").\n   - **Single job section:** `<hr>` separator; label \"Job ID\", text input `#jobs-job-id` (placeholder \"job UUID\"); three buttons `#jobs-get-btn` (\"Get Job\"), `#jobs-cancel-btn` (\"Cancel Job\"), `#jobs-delete-btn` (\"Delete Job\") on one row.\n   - **Bulk clear section:** `<hr>` separator; label \"Bulk clear status\", select `#jobs-bulk-status` with options `completed`, `failed`, `cancelled`, `all`; button `#jobs-bulk-clear-btn` (\"Bulk Clear\").\n   - **Response area:** `<pre id=\"jobs-response\"></pre>` at the bottom.\n\n4. **Preserve the outer `<details id=\"jobs-panel\">` wrapper** and the `<summary>Jobs</summary>` header.\n\n5. **Verify all 13 IDs** are present and unique (no duplicate IDs with other panels).\n\n6. **Write the plan report** (this file), then update `CURRENT_TASK.md`.",
+  "current_plan": "1. **Locate the stub** in `app.js` at line 206: `// Jobs panel handlers will be added in Phase 003.`\n2. **Replace the stub** with seven handler functions in the `// \u2500\u2500 PANEL: JOBS \u2500\u2500` section, following the exact patterns established by existing handlers (e.g., `handleWorkersList`, `handleWorkersRestart`, `handleModelsGet`):\n   - Each function reads DOM inputs via `document.getElementById(...).value`\n   - Validation functions (get/cancel/delete) check for empty job ID and call `showResponse()` with `{ error: 'id_required', message: 'Enter a job ID' }, false` before returning\n   - `handleJobSubmit` trims the textarea value, attempts `JSON.parse()` with a SyntaxError catch that calls `showResponse({ error: 'json_parse_error', message: e.message }, false)` and returns\n   - `handleJobSubmit` calls `apiFetch('/v1/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: raw })` \u2014 sending the raw string, not re-serialised\n   - On `ok && data.job_id`, `handleJobSubmit` sets `#jobs-job-id.value = data.job_id`\n   - `handleJobsList` builds the query string conditionally: `/v1/jobs` or `/v1/jobs?status=<value>`\n   - `handleJobsBulkClear` calls `apiFetch('/v1/jobs?status=' + status, { method: 'DELETE' })` \u2014 the 204 response is handled by the existing `apiFetch` guard\n3. **Update INIT section** (after the existing Workers panel wiring, before the closing `});`):\n   - Set `#jobs-body.value = getTemplate('zit')` for initial load\n   - Add event listeners for all nine interactive elements (pipeline change, 8 buttons)\n   - Use the same null-guard pattern as existing handlers: `const el = document.getElementById('...'); if (el) el.addEventListener(...)`\n4. **Verify** by running `node --check app.js` \u2014 must exit 0",
   "failed": [],
   "needs_review": [],
-  "last_updated": "2026-06-09T22:32:52+0200",
-  "plan_approval_message_id": "1514004325414731839",
+  "last_updated": "2026-06-09T22:47:26+0200",
+  "plan_approval_message_id": "1514007768317689897",
   "push_approval_message_id": null,
-  "plan_report_message_id": "1514004323338813591",
+  "plan_report_message_id": "1514007766463680655",
   "impl_report_message_id": null
 }
