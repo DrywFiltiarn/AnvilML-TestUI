@@ -61,24 +61,40 @@
     <!-- Jobs Panel -->
     <details id="jobs-panel">
       <summary>Jobs</summary>
-      <h3>Coming in Phase 003</h3>
+      <h3>Jobs</h3>
+      <label for="jobs-pipeline">Pipeline</label>
       <select id="jobs-pipeline">
-        <option value="zit">ZiT</option>
+        <option value="zit" selected>ZiT (distilled)</option>
         <option value="sdxl">SDXL</option>
       </select>
-      <button id="jobs-reset-btn">Reset</button>
-      <textarea id="jobs-body" rows="10"></textarea>
-      <button id="jobs-submit-btn">Submit</button>
+      <button id="jobs-reset-btn">Reset Template</button>
+      <label for="jobs-body">Request body (JSON)</label>
+      <textarea id="jobs-body" rows="20"></textarea>
+      <button id="jobs-submit-btn">Submit Job</button>
+      <hr>
+      <label for="jobs-status-filter">Status filter</label>
       <select id="jobs-status-filter">
-        <option value="">All statuses</option>
+        <option value="">all statuses</option>
+        <option value="queued">queued</option>
+        <option value="running">running</option>
+        <option value="completed">completed</option>
+        <option value="failed">failed</option>
+        <option value="cancelled">cancelled</option>
       </select>
-      <button id="jobs-list-btn">List</button>
-      <input type="text" id="jobs-job-id" placeholder="Job ID">
-      <button id="jobs-get-btn">Get</button>
-      <button id="jobs-cancel-btn">Cancel</button>
-      <button id="jobs-delete-btn">Delete</button>
+      <button id="jobs-list-btn">List Jobs</button>
+      <hr>
+      <label for="jobs-job-id">Job ID</label>
+      <input type="text" id="jobs-job-id" placeholder="job UUID">
+      <button id="jobs-get-btn">Get Job</button>
+      <button id="jobs-cancel-btn">Cancel Job</button>
+      <button id="jobs-delete-btn">Delete Job</button>
+      <hr>
+      <label for="jobs-bulk-status">Bulk clear status</label>
       <select id="jobs-bulk-status">
-        <option value="">Filter by status</option>
+        <option value="completed">completed</option>
+        <option value="failed">failed</option>
+        <option value="cancelled">cancelled</option>
+        <option value="all">all</option>
       </select>
       <button id="jobs-bulk-clear-btn">Bulk Clear</button>
       <pre id="jobs-response"></pre>
