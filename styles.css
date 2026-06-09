@@ -1,0 +1,208 @@
+/* ── AnvilML-TestUI ── Dark Terminal Theme ─────────────────────────── */
+
+/* 1. Custom Properties */
+:root {
+  --bg:           #0d1117;
+  --surface:      #161b22;
+  --border:       #30363d;
+  --text:         #c9d1d9;
+  --text-muted:   #8b949e;
+  --green:        #3fb950;
+  --red:          #f85149;
+  --amber:        #d29922;
+  --accent:       #58a6ff;
+}
+
+/* 2. Global Reset & Body */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+/* 3. Navbar */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 100;
+}
+
+nav .project-name {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+nav .status-pill {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 12px;
+}
+
+/* 4. Main Content Area */
+main {
+  padding-top: 56px;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 32px;
+}
+
+/* 5. Panel Sections (details / summary) */
+details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+}
+
+summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 4px 0;
+  list-style: none;
+  user-select: none;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+summary::before {
+  content: '▶';
+  display: inline-block;
+  width: 1em;
+  margin-right: 6px;
+  font-size: 10px;
+  transition: transform 0.15s ease;
+}
+
+details[open] > summary::before {
+  content: '▼';
+}
+
+/* 6. Response Areas */
+pre.response,
+pre#ws-log,
+div.ws-log {
+  max-height: 400px;
+  overflow-y: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 8px;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  margin: 8px 0;
+}
+
+pre.response {
+  color: var(--text);
+}
+
+/* Monospace font stack for code elements */
+pre,
+code,
+.response,
+.ws-log {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+/* 7. Status Classes */
+.status-ok {
+  color: var(--green);
+}
+
+.status-error {
+  color: var(--red);
+}
+
+.status-connecting {
+  color: var(--amber);
+}
+
+/* 8. Buttons */
+button {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 4px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 13px;
+  margin: 2px 4px 2px 0;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+/* 9. Form Elements */
+input,
+select,
+textarea {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+label {
+  display: block;
+  margin: 8px 0 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* 10. Textarea #jobs-body */
+textarea#jobs-body {
+  font-family: monospace;
+  font-size: 12px;
+  white-space: pre;
+  min-height: 320px;
+  width: 100%;
+  resize: vertical;
+  display: block;
+  margin: 8px 0;
+}
+
+/* ── Utility ────────────────────────────────────────────────────────── */
+fieldset {
+  border-color: var(--border);
+  margin-top: 8px;
+}
+
+legend {
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 0 4px;
+}
