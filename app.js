@@ -94,7 +94,21 @@ async function handleConnect() {
 // ============================================================================
 // PANEL: SYSTEM
 // ============================================================================
-// System panel handlers will be added in Phase 002.
+
+async function handleSysInfo() {
+  const { ok, data } = await apiFetch("/v1/system");
+  showResponse("sys-response", data, ok);
+}
+
+async function handleSysEnv() {
+  const { ok, data } = await apiFetch("/v1/system/env");
+  showResponse("sys-response", data, ok);
+}
+
+async function handleSysVersions() {
+  const { ok, data } = await apiFetch("/v1/system/versions");
+  showResponse("sys-response", data, ok);
+}
 
 // ============================================================================
 // PANEL: MODELS
@@ -149,4 +163,14 @@ document.addEventListener("DOMContentLoaded", () => {
       handleConnect();
     });
   }
+
+  // System panel
+  const sysInfoBtn = document.getElementById("sys-info-btn");
+  if (sysInfoBtn) sysInfoBtn.addEventListener("click", handleSysInfo);
+
+  const sysEnvBtn = document.getElementById("sys-env-btn");
+  if (sysEnvBtn) sysEnvBtn.addEventListener("click", handleSysEnv);
+
+  const sysVersionsBtn = document.getElementById("sys-versions-btn");
+  if (sysVersionsBtn) sysVersionsBtn.addEventListener("click", handleSysVersions);
 });
