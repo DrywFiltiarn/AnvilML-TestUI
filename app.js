@@ -431,7 +431,40 @@ async function handleArtifactsFetch() {
 // ============================================================================
 // PANEL: EVENTS
 // ============================================================================
-// Events panel handlers will be added in Phase 005.
+
+const WsEventTypes = [
+  "job.queued",
+  "job.started",
+  "job.progress",
+  "job.image_ready",
+  "job.completed",
+  "job.failed",
+  "job.cancelled",
+  "worker.status",
+  "system.stats",
+  "provisioning.progress",
+];
+
+function renderWsCounters() {
+  const countersEl = document.getElementById("ws-counters");
+  if (!countersEl) return;
+  countersEl.innerHTML = "";
+  WsEventTypes.forEach(function (type) {
+    var count = wsCounters[type] || 0;
+    var span = document.createElement("span");
+    span.className = "ws-counter";
+    span.textContent = type + ": " + count;
+    countersEl.appendChild(span);
+    countersEl.appendChild(document.createTextNode(" "));
+  });
+}
+
+function handleWsClear() {
+  var logEl = document.getElementById("ws-log");
+  if (logEl) logEl.textContent = "";
+  wsCounters = {};
+  renderWsCounters();
+}
 
 // ============================================================================
 // INIT
@@ -522,4 +555,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const artifactsFetchBtn = document.getElementById("artifacts-fetch-btn");
   if (artifactsFetchBtn) artifactsFetchBtn.addEventListener("click", handleArtifactsFetch);
+
+  // Events panel
+  const wsConnectBtn = document.getElementById("ws-connect-btn");
+  if (wsConnectBtn) wsConnectBtn.addEventListener("click", wsConnect);
+
+  const wsDisconnectBtn = document.getElementById("ws-disconnect-btn");
+  if (wsDisconnectBtn) wsDisconnectBtn.addEventListener("click", wsDisconnect);
+
+  const wsClearBtn = document.getElementById("ws-clear-btn");
+  if (wsClearBtn) wsClearBtn.addEventListener("click", handleWsClear);
+
+  const wsAutoScrollEl = document.getElementById("ws-auto-scroll");
+  if (wsAutoScrollEl) {
+    wsAutoScrollEl.addEventListener("change", function () {
+      wsAutoScroll = this.checked;
+    });
+  }
 });

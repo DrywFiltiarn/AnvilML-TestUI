@@ -206,3 +206,30 @@ legend {
   font-size: 12px;
   padding: 0 4px;
 }
+
+/* ── Events Panel ───────────────────────────────────────────────────── */
+.ws-entry {
+  border-bottom: 1px solid var(--border);
+  padding: 4px 0;
+  font-size: 11px;
+  white-space: pre-wrap;
+}
+
+.ws-entry-system-stats {
+  color: var(--text-muted);
+}
+
+.ws-entry-job-completed {
+  color: var(--green);
+}
+
+.ws-entry-job-failed {
+  color: var(--red);
+}
+
+.ws-counter {
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-right: 8px;
+}
