@@ -9,16 +9,17 @@
     "P3-A1",
     "P3-B1",
     "P3-C1",
-    "P3-D1"
+    "P3-D1",
+    "P4-A1"
   ],
-  "in_progress": "P4-A1",
+  "in_progress": "P4-B1",
   "plan_approved": true,
-  "current_plan": "1. **Edit `index.html`** \u2014 In the Artifacts panel section (lines 103\u2013112), remove the\n   `<h3>Coming in Phase 004</h3>` heading line and update the four attribute values:\n   - `<input id=\"artifacts-job-id\">` placeholder \u2192 `\"job UUID \u2014 blank for all\"`\n   - `<button id=\"artifacts-list-btn\">` text \u2192 `\"List Artifacts\"`\n   - `<input id=\"artifacts-hash\">` placeholder \u2192 `\"artifact hash SHA256 hex\"`\n   - `<button id=\"artifacts-fetch-btn\">` text \u2192 `\"Fetch Image\"`\n   - Leave `<div id=\"artifacts-response\"></div>` as-is (already a div with correct ID).\n\n2. **Edit `styles.css`** \u2014 On the selector at line 103, change `pre.response,` to\n   `pre.response, div.response,` so the block that sets `max-height`, `overflow-y`,\n   `background`, `border`, `padding`, `font-size`, `white-space`, `word-break`,\n   `font-family`, and `margin` applies to both `<pre>` and `<div>` elements with\n   class `response`.\n\n3. **Verification** \u2014 Run the acceptance checks:\n   - `python3 -c \"import re; ids=re.findall(r'id=\\\"([^\\\"]+)\\\"', open('index.html').read()); [print(id) for id in ['artifacts-job-id','artifacts-list-btn','artifacts-hash','artifacts-fetch-btn','artifacts-response'] if id not in ids]\"` \u2014 must print nothing.\n   - `python3 -c \"import re; html=open('index.html').read(); assert re.search(r'<div[^>]+id=\\\"artifacts-response\\\"', html), 'must be div'; print('PASS')\"` \u2014 must print PASS.\n   - `node --check app.js` \u2014 must exit 0 (no source changes to app.js, but verifying no regression).",
+  "current_plan": "1. **Add `apiFetchBlob(path)` to the API CLIENT section** (after the existing `apiFetch`\n   function, around line 112):\n   - Construct URL: `const url = baseUrl.replace(/\\/+$/, \"\") + path;`\n   - `try { const resp = await fetch(url); }`\n   - If `resp.ok` (2xx): `const blob = await resp.blob(); return { ok: true, status: resp.status, blob };`\n   - If not `resp.ok` (non-2xx): `return { ok: false, status: resp.status, blob: null };`\n   - Network error catch: `return { ok: false, status: 0, blob: null, error: e.message };`\n\n2. **Implement `handleArtifactsList()` in PANEL: ARTIFACTS section** (replace the placeholder\n   comment at line 283):\n   - Read `#artifacts-job-id` value.\n   - Build path: `\"/v1/artifacts\" + (jobId ? \"?job_id=\" + jobId : \"\")`.\n   - Call `apiFetch(path)`.\n   - On success: clear `#artifacts-response`, set `element.textContent = JSON.stringify(data, null, 2)`.\n   - On failure: clear `#artifacts-response`, set `element.innerHTML = \"<pre class=\\\"status-error\\\">Error: \" + escapeHtml(data?.message ?? String(data)) + \"</pre>\"` (or use a simpler inline error display \u2014 the task spec says \"sets inner HTML to an error-styled `<pre>`\").\n\n3. **Implement `handleArtifactsFetch()` in PANEL: ARTIFACTS section** (after `handleArtifactsList`):\n   - Read `#artifacts-hash` value.\n   - If empty: clear `#artifacts-response`, set `element.textContent = \"Error: artifact hash required\"` (or similar inline error), return.\n   - Build path: `\"/v1/artifacts/\" + hash`.\n   - Call `apiFetchBlob(path)`.\n   - On success: if `lastArtifactUrl` is truthy, call `URL.revokeObjectURL(lastArtifactUrl)`;\n     create `const url = URL.createObjectURL(blob)`; set `lastArtifactUrl = url`;\n     create `<img>` element with `src=url`, `style.maxWidth=\"100%\"`, `alt=hash`;\n     clear `#artifacts-response`, append `<img>`.\n   - On failure: clear `#artifacts-response`, display error message.\n\n4. **Wire event listeners in INIT section** (after the jobs panel listeners, before the\n   closing `});` of the DOMContentLoaded handler):\n   - `document.getElementById(\"artifacts-list-btn\").addEventListener(\"click\", handleArtifactsList);`\n   - `document.getElementById(\"artifacts-fetch-btn\").addEventListener(\"click\", handleArtifactsFetch);`",
   "failed": [],
   "needs_review": [],
-  "last_updated": "2026-06-09T23:01:18+0200",
-  "plan_approval_message_id": "1514011436517556314",
+  "last_updated": "2026-06-09T23:14:06+0200",
+  "plan_approval_message_id": "1514014655457263748",
   "push_approval_message_id": null,
-  "plan_report_message_id": "1514011434701553816",
+  "plan_report_message_id": "1514014653766828102",
   "impl_report_message_id": null
 }

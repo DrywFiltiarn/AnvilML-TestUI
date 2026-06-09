@@ -111,6 +111,20 @@ async function apiFetch(path, options = {}) {
   }
 }
 
+async function apiFetchBlob(path) {
+  const url = baseUrl.replace(/\/+$/, "") + path;
+  try {
+    const resp = await fetch(url);
+    if (resp.ok) {
+      const blob = await resp.blob();
+      return { ok: true, status: resp.status, blob };
+    }
+    return { ok: false, status: resp.status, blob: null };
+  } catch (e) {
+    return { ok: false, status: 0, blob: null, error: e.message };
+  }
+}
+
 // ============================================================================
 // WEBSOCKET
 // ============================================================================
@@ -280,7 +294,47 @@ async function handleJobsBulkClear() {
 // ============================================================================
 // PANEL: ARTIFACTS
 // ============================================================================
-// Artifacts panel handlers will be added in Phase 004.
+
+async function handleArtifactsList() {
+  const jobId = document.getElementById("artifacts-job-id").value;
+  const path = "/v1/artifacts" + (jobId ? "?job_id=" + jobId : "");
+  const { ok, data } = await apiFetch(path);
+  const element = document.getElementById("artifacts-response");
+  if (!element) return;
+  if (ok) {
+    element.textContent = JSON.stringify(data, null, 2);
+  } else {
+    element.innerHTML = '<pre class="status-error">Error: ' + (data?.message ?? String(data)) + "</pre>";
+  }
+}
+
+async function handleArtifactsFetch() {
+  const hash = document.getElementById("artifacts-hash").value;
+  if (!hash) {
+    const element = document.getElementById("artifacts-response");
+    if (element) element.textContent = "Error: artifact hash required";
+    return;
+  }
+  const path = "/v1/artifacts/" + hash;
+  const result = await apiFetchBlob(path);
+  const element = document.getElementById("artifacts-response");
+  if (!element) return;
+  if (result.ok && result.blob) {
+    if (lastArtifactUrl) {
+      URL.revokeObjectURL(lastArtifactUrl);
+    }
+    const url = URL.createObjectURL(result.blob);
+    lastArtifactUrl = url;
+    const img = document.createElement("img");
+    img.src = url;
+    img.style.maxWidth = "100%";
+    img.alt = hash;
+    element.textContent = "";
+    element.appendChild(img);
+  } else {
+    element.textContent = "Error: " + (result.error ?? "status " + result.status);
+  }
+}
 
 // ============================================================================
 // PANEL: EVENTS
@@ -369,4 +423,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const jobsBulkClearBtn = document.getElementById("jobs-bulk-clear-btn");
   if (jobsBulkClearBtn) jobsBulkClearBtn.addEventListener("click", handleJobsBulkClear);
+
+  // Artifacts panel
+  const artifactsListBtn = document.getElementById("artifacts-list-btn");
+  if (artifactsListBtn) artifactsListBtn.addEventListener("click", handleArtifactsList);
+
+  const artifactsFetchBtn = document.getElementById("artifacts-fetch-btn");
+  if (artifactsFetchBtn) artifactsFetchBtn.addEventListener("click", handleArtifactsFetch);
 });
