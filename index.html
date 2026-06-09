@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AnvilML TestUI</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+
+    <!-- Connection Panel -->
+    <details open id="connection-panel">
+      <summary>Connection</summary>
+      <label for="base-url">Base URL</label>
+      <input type="text" id="base-url" value="http://localhost:8488" placeholder="http://localhost:8488">
+      <button id="connect-btn">Connect</button>
+      <span id="conn-status"></span>
+      <pre id="conn-response"></pre>
+    </details>
+
+    <!-- System Panel -->
+    <details id="system-panel">
+      <summary>System</summary>
+      <h3>Coming in Phase 002</h3>
+      <button id="sys-info-btn">Info</button>
+      <button id="sys-env-btn">Environment</button>
+      <button id="sys-versions-btn">Versions</button>
+      <pre id="sys-response"></pre>
+    </details>
+
+    <!-- Models Panel -->
+    <details id="models-panel">
+      <summary>Models</summary>
+      <h3>Coming in Phase 002</h3>
+      <select id="models-kind">
+        <option value="">All kinds</option>
+      </select>
+      <button id="models-list-btn">List</button>
+      <input type="text" id="models-id" placeholder="Model ID">
+      <button id="models-get-btn">Get</button>
+      <button id="models-rescan-btn">Rescan</button>
+      <pre id="models-response"></pre>
+    </details>
+
+    <!-- Workers Panel -->
+    <details id="workers-panel">
+      <summary>Workers</summary>
+      <h3>Coming in Phase 003</h3>
+      <button id="workers-list-btn">List</button>
+      <input type="text" id="workers-id" placeholder="Worker ID">
+      <button id="workers-restart-btn">Restart</button>
+      <pre id="workers-response"></pre>
+    </details>
+
+    <!-- Jobs Panel -->
+    <details id="jobs-panel">
+      <summary>Jobs</summary>
+      <h3>Coming in Phase 003</h3>
+      <select id="jobs-pipeline">
+        <option value="zit">ZiT</option>
+        <option value="sdxl">SDXL</option>
+      </select>
+      <button id="jobs-reset-btn">Reset</button>
+      <textarea id="jobs-body" rows="10"></textarea>
+      <button id="jobs-submit-btn">Submit</button>
+      <select id="jobs-status-filter">
+        <option value="">All statuses</option>
+      </select>
+      <button id="jobs-list-btn">List</button>
+      <input type="text" id="jobs-job-id" placeholder="Job ID">
+      <button id="jobs-get-btn">Get</button>
+      <button id="jobs-cancel-btn">Cancel</button>
+      <button id="jobs-delete-btn">Delete</button>
+      <select id="jobs-bulk-status">
+        <option value="">Filter by status</option>
+      </select>
+      <button id="jobs-bulk-clear-btn">Bulk Clear</button>
+      <pre id="jobs-response"></pre>
+    </details>
+
+    <!-- Artifacts Panel -->
+    <details id="artifacts-panel">
+      <summary>Artifacts</summary>
+      <h3>Coming in Phase 004</h3>
+      <input type="text" id="artifacts-job-id" placeholder="Job ID">
+      <button id="artifacts-list-btn">List</button>
+      <input type="text" id="artifacts-hash" placeholder="Hash">
+      <button id="artifacts-fetch-btn">Fetch</button>
+      <div id="artifacts-response"></div>
+    </details>
+
+    <!-- Events Panel -->
+    <details id="events-panel">
+      <summary>Events</summary>
+      <h3>Coming in Phase 005</h3>
+      <button id="ws-connect-btn">Connect</button>
+      <button id="ws-disconnect-btn">Disconnect</button>
+      <span id="ws-status"></span>
+      <label><input type="checkbox" id="ws-auto-scroll" checked> Auto-scroll</label>
+      <button id="ws-clear-btn">Clear</button>
+      <pre id="ws-log"></pre>
+      <div id="ws-counters"></div>
+      <fieldset>
+        <legend>Filters</legend>
+        <label><input type="checkbox" id="ws-filter-job-queued" checked> job-queued</label>
+        <label><input type="checkbox" id="ws-filter-job-started" checked> job-started</label>
+        <label><input type="checkbox" id="ws-filter-job-progress" checked> job-progress</label>
+        <label><input type="checkbox" id="ws-filter-job-image-ready" checked> job-image-ready</label>
+        <label><input type="checkbox" id="ws-filter-job-completed" checked> job-completed</label>
+        <label><input type="checkbox" id="ws-filter-job-failed" checked> job-failed</label>
+        <label><input type="checkbox" id="ws-filter-job-cancelled" checked> job-cancelled</label>
+        <label><input type="checkbox" id="ws-filter-worker-status" checked> worker-status</label>
+        <label><input type="checkbox" id="ws-filter-system-stats" checked> system-stats</label>
+        <label><input type="checkbox" id="ws-filter-provisioning-progress" checked> provisioning-progress</label>
+      </fieldset>
+    </details>
+
+  </main>
+  <script defer src="app.js"></script>
+</body>
+</html>
