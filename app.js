@@ -19,7 +19,48 @@ let lastArtifactUrl = null;
 // ============================================================================
 // TEMPLATES
 // ============================================================================
-// Template constants (ZiT, SDXL) will be added in Phase 003.
+const TEMPLATE_ZIT = JSON.stringify({
+  "graph": {
+    "nodes": [
+      { "id": "n0", "type": "ZitLoadPipeline",  "inputs": { "model_id": "<model_id>" } },
+      { "id": "n1", "type": "ZitTextEncode",    "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "prompt": "<prompt>" } },
+      { "id": "n2", "type": "ZitSampler",       "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "conditioning": { "node_id": "n1", "output_slot": "conditioning" }, "steps": 8, "seed": -1 } },
+      { "id": "n3", "type": "ZitDecode",        "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "latents": { "node_id": "n2", "output_slot": "latents" } } },
+      { "id": "n4", "type": "SaveImage",        "inputs": { "image": { "node_id": "n3", "output_slot": "image" }, "prompt": "<prompt>", "seed": { "node_id": "n2", "output_slot": "seed" }, "steps": 8 } }
+    ]
+  },
+  "settings": {
+    "seed": -1,
+    "steps": 8,
+    "guidance_scale": 0.0,
+    "width": 1024,
+    "height": 1024
+  }
+}, null, 2);
+
+const TEMPLATE_SDXL = JSON.stringify({
+  "graph": {
+    "nodes": [
+      { "id": "n0", "type": "SdxlLoadPipeline", "inputs": { "model_id": "<model_id>" } },
+      { "id": "n1", "type": "SdxlTextEncode",   "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "prompt": "<prompt>", "negative_prompt": "" } },
+      { "id": "n2", "type": "SdxlSampler",      "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "conditioning": { "node_id": "n1", "output_slot": "conditioning" }, "steps": 20, "guidance_scale": 7.5, "seed": -1 } },
+      { "id": "n3", "type": "SdxlDecode",       "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "latents": { "node_id": "n2", "output_slot": "latents" } } },
+      { "id": "n4", "type": "SaveImage",        "inputs": { "image": { "node_id": "n3", "output_slot": "image" }, "prompt": "<prompt>", "seed": { "node_id": "n2", "output_slot": "seed" }, "steps": 20 } }
+    ]
+  },
+  "settings": {
+    "seed": -1,
+    "steps": 20,
+    "guidance_scale": 7.5,
+    "width": 1024,
+    "height": 1024
+  }
+}, null, 2);
+
+function getTemplate(pipeline) {
+  if (pipeline === "sdxl") return TEMPLATE_SDXL;
+  return TEMPLATE_ZIT;
+}
 
 // ============================================================================
 // UTILITIES

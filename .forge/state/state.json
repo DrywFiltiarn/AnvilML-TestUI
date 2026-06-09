@@ -5,16 +5,17 @@
     "P1-C1",
     "P1-D1",
     "P2-A1",
-    "P2-B1"
+    "P2-B1",
+    "P3-A1"
   ],
-  "in_progress": "P3-A1",
+  "in_progress": "P3-B1",
   "plan_approved": true,
-  "current_plan": "1. **Modify `index.html` Workers panel** (lines 51\u201359):\n   - Remove `<h3>Coming in Phase 003</h3>`.\n   - Add `<label for=\"workers-list-btn\">Workers</label>` above the list button for visual grouping.\n   - Change `#workers-list-btn` text from \"List\" to \"List Workers\".\n   - Update `#workers-id` placeholder from \"Worker ID\" to \"worker-0\" (following the `worker-{device_index}` convention from the task description).\n   - Change `#workers-restart-btn` text from \"Restart\" to \"Restart Worker\".\n   - Keep `#workers-response` as `<pre>` \u2014 already correct.\n\n2. **Implement `handleWorkersList()` in `app.js`** (within `// \u2500\u2500 PANEL: WORKERS \u2500\u2500` section, replacing the stub comment at line 146):\n   ```javascript\n   async function handleWorkersList() {\n     const { ok, data } = await apiFetch(\"/v1/workers\");\n     showResponse(\"workers-response\", data, ok);\n   }\n   ```\n\n3. **Implement `handleWorkersRestart()` in `app.js`** (following `handleWorkersList`):\n   ```javascript\n   async function handleWorkersRestart() {\n     const id = document.getElementById(\"workers-id\").value;\n     if (!id) {\n       showResponse(\"workers-response\", { error: \"id_required\", message: \"Enter a worker ID\" }, false);\n       return;\n     }\n     const { ok, data } = await apiFetch(\"/v1/workers/\" + id + \"/restart\", { method: \"POST\" });\n     showResponse(\"workers-response\", data, ok);\n   }\n   ```\n\n4. **Wire handlers in INIT** (append after the Models panel wiring block, before the closing `});` of `DOMContentLoaded`):\n   ```javascript\n   // Workers panel\n   const workersListBtn = document.getElementById(\"workers-list-btn\");\n   if (workersListBtn) workersListBtn.addEventListener(\"click\", handleWorkersList);\n\n   const workersRestartBtn = document.getElementById(\"workers-restart-btn\");\n   if (workersRestartBtn) workersRestartBtn.addEventListener(\"click\", handleWorkersRestart);\n   ```\n\n5. **Verify** by running `node --check app.js` \u2014 must exit 0.",
+  "current_plan": "1. Open `app.js` and locate the `// \u2500\u2500 TEMPLATES \u2500\u2500` section (lines 19\u201322), which currently contains only a stub comment: `// Template constants (ZiT, SDXL) will be added in Phase 003.`\n2. Replace the stub comment with the `TEMPLATE_ZIT` constant: construct a plain JavaScript object matching the exact ZiT `SubmitJobRequest` structure from `ANVILML_TESTUI_DESIGN.md \u00a76.1`, then wrap it with `JSON.stringify(..., null, 2)` and assign to a `const TEMPLATE_ZIT`.\n3. Replace/add the `TEMPLATE_SDXL` constant: construct the SDXL `SubmitJobRequest` object per `ANVILML_TESTUI_DESIGN.md \u00a76.2` (noting the `negative_prompt: \"\"` input on `SdxlTextEncode` and `guidance_scale: 7.5` on `SdxlSampler`), wrap with `JSON.stringify(..., null, 2)`, assign to `const TEMPLATE_SDXL`.\n4. Add the `getTemplate(pipeline)` function below the constants, using a simple if/else or switch to route `'zit'` \u2192 `TEMPLATE_ZIT`, `'sdxl'` \u2192 `TEMPLATE_SDXL`, default \u2192 `TEMPLATE_ZIT`.\n5. Verify with `node --check app.js` (syntax check) \u2014 must exit 0.\n6. Verify template contents by evaluating `app.js` in Node and running the acceptance assertions from `TASKS_PHASE003.md`.",
   "failed": [],
   "needs_review": [],
-  "last_updated": "2026-06-09T22:05:29+0200",
-  "plan_approval_message_id": "1513997435251462324",
+  "last_updated": "2026-06-09T22:17:23+0200",
+  "plan_approval_message_id": "1514000427799285882",
   "push_approval_message_id": null,
-  "plan_report_message_id": "1513997433758285904",
+  "plan_report_message_id": "1514000426599452853",
   "impl_report_message_id": null
 }
