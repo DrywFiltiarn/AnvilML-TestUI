@@ -48,6 +48,9 @@ async function apiFetch(path, options = {}) {
     if (resp.status === 204) {
       return { ok: true, status: 204, data: { status: "deleted" } };
     }
+    if (resp.status === 202) {
+      return { ok: true, status: 202, data: { status: "rescan triggered" } };
+    }
     if (resp.ok) {
       try {
         const data = await resp.json();
@@ -115,6 +118,28 @@ async function handleSysVersions() {
 // ============================================================================
 // Models panel handlers will be added in Phase 002.
 
+async function handleModelsList() {
+  const kind = document.getElementById("models-kind").value;
+  const path = "/v1/models" + (kind ? "?kind=" + kind : "");
+  const { ok, data } = await apiFetch(path);
+  showResponse("models-response", data, ok);
+}
+
+async function handleModelsGet() {
+  const id = document.getElementById("models-id").value;
+  if (!id) {
+    showResponse("models-response", { error: "id_required", message: "Enter a model ID" }, false);
+    return;
+  }
+  const { ok, data } = await apiFetch("/v1/models/" + id);
+  showResponse("models-response", data, ok);
+}
+
+async function handleModelsRescan() {
+  const { ok, data } = await apiFetch("/v1/models/rescan", { method: "POST" });
+  showResponse("models-response", data, ok);
+}
+
 // ============================================================================
 // PANEL: WORKERS
 // ============================================================================
@@ -173,4 +198,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const sysVersionsBtn = document.getElementById("sys-versions-btn");
   if (sysVersionsBtn) sysVersionsBtn.addEventListener("click", handleSysVersions);
+
+  // Models panel
+  const modelsListBtn = document.getElementById("models-list-btn");
+  if (modelsListBtn) modelsListBtn.addEventListener("click", handleModelsList);
+
+  const modelsGetBtn = document.getElementById("models-get-btn");
+  if (modelsGetBtn) modelsGetBtn.addEventListener("click", handleModelsGet);
+
+  const modelsRescanBtn = document.getElementById("models-rescan-btn");
+  if (modelsRescanBtn) modelsRescanBtn.addEventListener("click", handleModelsRescan);
 });

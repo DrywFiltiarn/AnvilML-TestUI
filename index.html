@@ -31,14 +31,20 @@
     <!-- Models Panel -->
     <details id="models-panel">
       <summary>Models</summary>
-      <h3>Coming in Phase 002</h3>
       <select id="models-kind">
         <option value="">All kinds</option>
+        <option value="diffusion">diffusion</option>
+        <option value="vae">vae</option>
+        <option value="lora">lora</option>
+        <option value="controlnet">controlnet</option>
+        <option value="clip">clip</option>
+        <option value="unet">unet</option>
+        <option value="upscale">upscale</option>
       </select>
-      <button id="models-list-btn">List</button>
-      <input type="text" id="models-id" placeholder="Model ID">
-      <button id="models-get-btn">Get</button>
-      <button id="models-rescan-btn">Rescan</button>
+      <button id="models-list-btn">List Models</button>
+      <input type="text" id="models-id" placeholder="model ID">
+      <button id="models-get-btn">Get Model</button>
+      <button id="models-rescan-btn">Trigger Rescan</button>
       <pre id="models-response"></pre>
     </details>
 
