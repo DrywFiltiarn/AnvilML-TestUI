@@ -128,7 +128,99 @@ async function apiFetchBlob(path) {
 // ============================================================================
 // WEBSOCKET
 // ============================================================================
-// WebSocket connection and event handling will be added in Phase 005.
+
+function wsConnect() {
+  var wsUrl = baseUrl.replace(/^https:/, "wss:").replace(/^http:/, "ws:") + "/v1/events";
+  ws = new WebSocket(wsUrl);
+
+  ws.onopen = function () {
+    var statusEl = document.getElementById("ws-status");
+    if (statusEl) {
+      statusEl.textContent = "\u25cf Connected";
+      statusEl.className = "status-ok";
+    }
+    var disconnectBtn = document.getElementById("ws-disconnect-btn");
+    if (disconnectBtn) disconnectBtn.disabled = false;
+    var connectBtn = document.getElementById("ws-connect-btn");
+    if (connectBtn) connectBtn.disabled = true;
+  };
+
+  ws.onclose = function () {
+    var statusEl = document.getElementById("ws-status");
+    if (statusEl) {
+      statusEl.textContent = "\u25cf Disconnected";
+      statusEl.className = "status-error";
+    }
+    var connectBtn = document.getElementById("ws-connect-btn");
+    if (connectBtn) connectBtn.disabled = false;
+    var disconnectBtn = document.getElementById("ws-disconnect-btn");
+    if (disconnectBtn) disconnectBtn.disabled = true;
+    ws = null;
+  };
+
+  ws.onerror = function () {
+    var logEl = document.getElementById("ws-log");
+    if (!logEl) return;
+    var entry = document.createElement("div");
+    entry.className = "ws-entry";
+    entry.textContent = "[ERROR] WebSocket error";
+    logEl.appendChild(entry);
+    if (wsAutoScroll) {
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+  };
+
+  ws.onmessage = function (event) {
+    handleWsMessage(event.data);
+  };
+}
+
+function wsDisconnect() {
+  if (ws !== null && ws.readyState !== WebSocket.CLOSED) {
+    ws.close();
+  }
+}
+
+function appendWsLogEntry(msg) {
+  var safeType = (msg.event || "").replace(/\./g, "-");
+  var entry = document.createElement("div");
+  entry.className = "ws-entry ws-entry-" + safeType;
+  entry.textContent = JSON.stringify(msg, null, 2);
+  var logEl = document.getElementById("ws-log");
+  if (logEl) {
+    logEl.appendChild(entry);
+    if (wsAutoScroll) {
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+  }
+}
+
+function handleWsMessage(raw) {
+  var msg;
+  try {
+    msg = JSON.parse(raw);
+  } catch (e) {
+    var logEl = document.getElementById("ws-log");
+    if (logEl) {
+      var entry = document.createElement("div");
+      entry.className = "ws-entry";
+      entry.textContent = "[PARSE ERROR] " + raw;
+      logEl.appendChild(entry);
+      if (wsAutoScroll) {
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+    }
+    return;
+  }
+
+  var filterId = "ws-filter-" + (msg.event || "").replace(/\./g, "-");
+  var filterEl = document.getElementById(filterId);
+  if (filterEl && !filterEl.checked) return;
+
+  wsCounters[msg.event] = (wsCounters[msg.event] || 0) + 1;
+  if (typeof renderWsCounters === "function") renderWsCounters();
+  appendWsLogEntry(msg);
+}
 
 // ============================================================================
 // PANEL: CONNECTION
