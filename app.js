@@ -143,7 +143,21 @@ async function handleModelsRescan() {
 // ============================================================================
 // PANEL: WORKERS
 // ============================================================================
-// Workers panel handlers will be added in Phase 003.
+
+async function handleWorkersList() {
+  const { ok, data } = await apiFetch("/v1/workers");
+  showResponse("workers-response", data, ok);
+}
+
+async function handleWorkersRestart() {
+  const id = document.getElementById("workers-id").value;
+  if (!id) {
+    showResponse("workers-response", { error: "id_required", message: "Enter a worker ID" }, false);
+    return;
+  }
+  const { ok, data } = await apiFetch("/v1/workers/" + id + "/restart", { method: "POST" });
+  showResponse("workers-response", data, ok);
+}
 
 // ============================================================================
 // PANEL: JOBS
@@ -208,4 +222,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const modelsRescanBtn = document.getElementById("models-rescan-btn");
   if (modelsRescanBtn) modelsRescanBtn.addEventListener("click", handleModelsRescan);
+
+  // Workers panel
+  const workersListBtn = document.getElementById("workers-list-btn");
+  if (workersListBtn) workersListBtn.addEventListener("click", handleWorkersList);
+
+  const workersRestartBtn = document.getElementById("workers-restart-btn");
+  if (workersRestartBtn) workersRestartBtn.addEventListener("click", handleWorkersRestart);
 });
