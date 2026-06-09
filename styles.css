@@ -100,7 +100,7 @@ details[open] > summary::before {
 }
 
 /* 6. Response Areas */
-pre.response,
+pre.response, div.response,
 pre#ws-log,
 div.ws-log {
   max-height: 400px;

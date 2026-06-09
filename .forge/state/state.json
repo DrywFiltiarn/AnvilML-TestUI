@@ -8,16 +8,17 @@
     "P2-B1",
     "P3-A1",
     "P3-B1",
-    "P3-C1"
+    "P3-C1",
+    "P3-D1"
   ],
-  "in_progress": "P3-D1",
+  "in_progress": "P4-A1",
   "plan_approved": true,
-  "current_plan": "1. **Locate the stub** in `app.js` at line 206: `// Jobs panel handlers will be added in Phase 003.`\n2. **Replace the stub** with seven handler functions in the `// \u2500\u2500 PANEL: JOBS \u2500\u2500` section, following the exact patterns established by existing handlers (e.g., `handleWorkersList`, `handleWorkersRestart`, `handleModelsGet`):\n   - Each function reads DOM inputs via `document.getElementById(...).value`\n   - Validation functions (get/cancel/delete) check for empty job ID and call `showResponse()` with `{ error: 'id_required', message: 'Enter a job ID' }, false` before returning\n   - `handleJobSubmit` trims the textarea value, attempts `JSON.parse()` with a SyntaxError catch that calls `showResponse({ error: 'json_parse_error', message: e.message }, false)` and returns\n   - `handleJobSubmit` calls `apiFetch('/v1/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: raw })` \u2014 sending the raw string, not re-serialised\n   - On `ok && data.job_id`, `handleJobSubmit` sets `#jobs-job-id.value = data.job_id`\n   - `handleJobsList` builds the query string conditionally: `/v1/jobs` or `/v1/jobs?status=<value>`\n   - `handleJobsBulkClear` calls `apiFetch('/v1/jobs?status=' + status, { method: 'DELETE' })` \u2014 the 204 response is handled by the existing `apiFetch` guard\n3. **Update INIT section** (after the existing Workers panel wiring, before the closing `});`):\n   - Set `#jobs-body.value = getTemplate('zit')` for initial load\n   - Add event listeners for all nine interactive elements (pipeline change, 8 buttons)\n   - Use the same null-guard pattern as existing handlers: `const el = document.getElementById('...'); if (el) el.addEventListener(...)`\n4. **Verify** by running `node --check app.js` \u2014 must exit 0",
+  "current_plan": "1. **Edit `index.html`** \u2014 In the Artifacts panel section (lines 103\u2013112), remove the\n   `<h3>Coming in Phase 004</h3>` heading line and update the four attribute values:\n   - `<input id=\"artifacts-job-id\">` placeholder \u2192 `\"job UUID \u2014 blank for all\"`\n   - `<button id=\"artifacts-list-btn\">` text \u2192 `\"List Artifacts\"`\n   - `<input id=\"artifacts-hash\">` placeholder \u2192 `\"artifact hash SHA256 hex\"`\n   - `<button id=\"artifacts-fetch-btn\">` text \u2192 `\"Fetch Image\"`\n   - Leave `<div id=\"artifacts-response\"></div>` as-is (already a div with correct ID).\n\n2. **Edit `styles.css`** \u2014 On the selector at line 103, change `pre.response,` to\n   `pre.response, div.response,` so the block that sets `max-height`, `overflow-y`,\n   `background`, `border`, `padding`, `font-size`, `white-space`, `word-break`,\n   `font-family`, and `margin` applies to both `<pre>` and `<div>` elements with\n   class `response`.\n\n3. **Verification** \u2014 Run the acceptance checks:\n   - `python3 -c \"import re; ids=re.findall(r'id=\\\"([^\\\"]+)\\\"', open('index.html').read()); [print(id) for id in ['artifacts-job-id','artifacts-list-btn','artifacts-hash','artifacts-fetch-btn','artifacts-response'] if id not in ids]\"` \u2014 must print nothing.\n   - `python3 -c \"import re; html=open('index.html').read(); assert re.search(r'<div[^>]+id=\\\"artifacts-response\\\"', html), 'must be div'; print('PASS')\"` \u2014 must print PASS.\n   - `node --check app.js` \u2014 must exit 0 (no source changes to app.js, but verifying no regression).",
   "failed": [],
   "needs_review": [],
-  "last_updated": "2026-06-09T22:47:26+0200",
-  "plan_approval_message_id": "1514007768317689897",
+  "last_updated": "2026-06-09T23:01:18+0200",
+  "plan_approval_message_id": "1514011436517556314",
   "push_approval_message_id": null,
-  "plan_report_message_id": "1514007766463680655",
+  "plan_report_message_id": "1514011434701553816",
   "impl_report_message_id": null
 }
