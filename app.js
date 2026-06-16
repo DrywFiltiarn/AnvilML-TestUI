@@ -213,7 +213,7 @@ function handleWsMessage(raw) {
     return;
   }
 
-  var filterId = "ws-filter-" + (msg.type || "").replace(/\./g, "-");
+  var filterId = "ws-filter-" + (msg.type || "").replace(/_/g, "-");
   var filterEl = document.getElementById(filterId);
   if (filterEl && !filterEl.checked) return;
 
