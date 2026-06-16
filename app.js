@@ -182,7 +182,7 @@ function wsDisconnect() {
 }
 
 function appendWsLogEntry(msg) {
-  var safeType = (msg.event || "").replace(/\./g, "-");
+  var safeType = (msg.type || "").replace(/\./g, "-");
   var entry = document.createElement("div");
   entry.className = "ws-entry ws-entry-" + safeType;
   entry.textContent = JSON.stringify(msg, null, 2);
@@ -213,11 +213,11 @@ function handleWsMessage(raw) {
     return;
   }
 
-  var filterId = "ws-filter-" + (msg.event || "").replace(/\./g, "-");
+  var filterId = "ws-filter-" + (msg.type || "").replace(/\./g, "-");
   var filterEl = document.getElementById(filterId);
   if (filterEl && !filterEl.checked) return;
 
-  wsCounters[msg.event] = (wsCounters[msg.event] || 0) + 1;
+  wsCounters[msg.type] = (wsCounters[msg.type] || 0) + 1;
   if (typeof renderWsCounters === "function") renderWsCounters();
   appendWsLogEntry(msg);
 }
@@ -433,16 +433,16 @@ async function handleArtifactsFetch() {
 // ============================================================================
 
 const WsEventTypes = [
-  "job.queued",
-  "job.started",
-  "job.progress",
-  "job.image_ready",
-  "job.completed",
-  "job.failed",
-  "job.cancelled",
-  "worker.status",
-  "system.stats",
-  "provisioning.progress",
+  "job_queued",
+  "job_started",
+  "job_progress",
+  "job_image_ready",
+  "job_completed",
+  "job_failed",
+  "job_cancelled",
+  "worker_status",
+  "system_stats",
+  "provisioning_progress",
 ];
 
 function renderWsCounters() {

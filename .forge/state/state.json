@@ -13,16 +13,17 @@
     "P4-A1",
     "P4-B1",
     "P5-A1",
-    "P5-B1"
+    "P5-B1",
+    "P5-C1"
   ],
-  "in_progress": "P5-C1",
-  "plan_approved": true,
-  "current_plan": "1. **Add `renderWsCounters()` to app.js** in the PANEL: EVENTS section. The function\n   clears `#ws-counters.innerHTML`, then iterates the 10 known event types\n   (`job.queued`, `job.started`, `job.progress`, `job.image_ready`, `job.completed`,\n   `job.failed`, `job.cancelled`, `worker.status`, `system.stats`,\n   `provisioning.progress`). For each, creates a `<span class=\"ws-counter\">` with\n   textContent `\"<event_type>: <count>\"` where count is `wsCounters[event] || 0`.\n   Separates spans with a space. This function is already called by\n   `handleWsMessage()` (line 221) via `typeof renderWsCounters === \"function\"` guard,\n   so no change needed there.\n\n2. **Add `handleWsClear()` to app.js** in the PANEL: EVENTS section. Sets\n   `document.getElementById(\"ws-log\").textContent = \"\"`, resets `wsCounters = {}`,\n   calls `renderWsCounters()`.\n\n3. **Add auto-scroll toggle handler** in the INIT section. Adds a `change` event listener\n   to `#ws-auto-scroll` that sets `wsAutoScroll = this.checked`.\n\n4. **Wire Events panel buttons in INIT section.** Add event listeners for:\n   - `#ws-connect-btn` \u2192 `wsConnect`\n   - `#ws-disconnect-btn` \u2192 `wsDisconnect`\n   - `#ws-clear-btn` \u2192 `handleWsClear`\n\n5. **Add CSS to styles.css.** Append the following rules after the existing utility section:\n   - `.ws-entry { border-bottom: 1px solid var(--border); padding: 4px 0; font-size: 11px; white-space: pre-wrap; }`\n   - `.ws-entry-system-stats { color: var(--text-muted); }`\n   - `.ws-entry-job-completed { color: var(--green); }`\n   - `.ws-entry-job-failed { color: var(--red); }`\n   - `.ws-counter { font-family: monospace; font-size: 11px; color: var(--text-muted); margin-right: 8px; }`\n\n6. **Verify** with `node --check app.js`.",
+  "in_progress": null,
+  "plan_approved": false,
+  "current_plan": null,
   "failed": [],
   "needs_review": [],
-  "last_updated": "2026-06-09T23:59:02+0200",
-  "plan_approval_message_id": "1514026009341726720",
+  "last_updated": "2026-06-10T00:08:47+0200",
+  "plan_approval_message_id": null,
   "push_approval_message_id": null,
-  "plan_report_message_id": "1514026007479189656",
+  "plan_report_message_id": null,
   "impl_report_message_id": null
 }
