@@ -19,43 +19,47 @@ let lastArtifactUrl = null;
 // ============================================================================
 // TEMPLATES
 // ============================================================================
-const TEMPLATE_ZIT = JSON.stringify({
-  "graph": {
-    "nodes": [
-      { "id": "n0", "type": "ZitLoadPipeline",  "inputs": { "model_id": "<model_id>" } },
-      { "id": "n1", "type": "ZitTextEncode",    "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "prompt": "<prompt>" } },
-      { "id": "n2", "type": "ZitSampler",       "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "conditioning": { "node_id": "n1", "output_slot": "conditioning" }, "steps": 8, "seed": -1 } },
-      { "id": "n3", "type": "ZitDecode",        "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "latents": { "node_id": "n2", "output_slot": "latents" } } },
-      { "id": "n4", "type": "SaveImage",        "inputs": { "image": { "node_id": "n3", "output_slot": "image" }, "prompt": "<prompt>", "seed": { "node_id": "n2", "output_slot": "seed" }, "steps": 8 } }
-    ]
-  },
-  "settings": {
-    "seed": -1,
-    "steps": 8,
-    "guidance_scale": 0.0,
-    "width": 1024,
-    "height": 1024
-  }
-}, null, 2);
+// Both presets submit the identical generic 8-node graph shape from
+// ANVILML_DESIGN.md Appendix B — v3 has no architecture-specific node
+// types (no ZitSampler/SdxlTextEncode). Only the Sampler node's
+// steps/cfg/seed inputs differ between a "distilled" few-step model
+// and a "standard" CFG-guided model. model_id values are placeholders;
+// the user must fill in real SHA256 model IDs from GET /v1/models.
+function buildGraphTemplate(steps, cfg) {
+  return JSON.stringify({
+    "graph": {
+      "nodes": [
+        { "id": "model",   "type": "LoadModel",     "inputs": { "model_id": "<diffusion-model-id>" } },
+        { "id": "vae",     "type": "LoadVae",       "inputs": { "model_id": "<vae-model-id>" } },
+        { "id": "encoder", "type": "LoadClip",      "inputs": { "model_id": "<text-encoder-model-id>", "clip_type": "qwen3" } },
+        { "id": "latent",  "type": "EmptyLatent",   "inputs": { "width": 1024, "height": 1024 } },
+        { "id": "cond",    "type": "ClipTextEncode","inputs": { "clip": { "node_id": "encoder", "output_slot": "clip" }, "text": "<prompt>" } },
+        { "id": "sampled", "type": "Sampler",       "inputs": {
+            "model": { "node_id": "model", "output_slot": "model" },
+            "conditioning": { "node_id": "cond", "output_slot": "conditioning" },
+            "latent": { "node_id": "latent", "output_slot": "latent" },
+            "steps": steps,
+            "cfg": cfg,
+            "seed": -1
+          } },
+        { "id": "decoded", "type": "VaeDecode",     "inputs": {
+            "vae": { "node_id": "vae", "output_slot": "vae" },
+            "latent": { "node_id": "sampled", "output_slot": "latent" }
+          } },
+        { "id": "saved",   "type": "SaveImage",     "inputs": {
+            "image": { "node_id": "decoded", "output_slot": "image" },
+            "seed": { "node_id": "sampled", "output_slot": "seed" }
+          } }
+      ]
+    },
+    "settings": {
+      "device_preference": null
+    }
+  }, null, 2);
+}
 
-const TEMPLATE_SDXL = JSON.stringify({
-  "graph": {
-    "nodes": [
-      { "id": "n0", "type": "SdxlLoadPipeline", "inputs": { "model_id": "<model_id>" } },
-      { "id": "n1", "type": "SdxlTextEncode",   "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "prompt": "<prompt>", "negative_prompt": "" } },
-      { "id": "n2", "type": "SdxlSampler",      "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "conditioning": { "node_id": "n1", "output_slot": "conditioning" }, "steps": 20, "guidance_scale": 7.5, "seed": -1 } },
-      { "id": "n3", "type": "SdxlDecode",       "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "latents": { "node_id": "n2", "output_slot": "latents" } } },
-      { "id": "n4", "type": "SaveImage",        "inputs": { "image": { "node_id": "n3", "output_slot": "image" }, "prompt": "<prompt>", "seed": { "node_id": "n2", "output_slot": "seed" }, "steps": 20 } }
-    ]
-  },
-  "settings": {
-    "seed": -1,
-    "steps": 20,
-    "guidance_scale": 7.5,
-    "width": 1024,
-    "height": 1024
-  }
-}, null, 2);
+const TEMPLATE_ZIT = buildGraphTemplate(4, 1.0);
+const TEMPLATE_SDXL = buildGraphTemplate(20, 7.5);
 
 function getTemplate(pipeline) {
   if (pipeline === "sdxl") return TEMPLATE_SDXL;
@@ -90,7 +94,7 @@ async function apiFetch(path, options = {}) {
       return { ok: true, status: 204, data: { status: "deleted" } };
     }
     if (resp.status === 202) {
-      return { ok: true, status: 202, data: { status: "rescan triggered" } };
+      return { ok: true, status: 202, data: { status: "accepted" } };
     }
     if (resp.ok) {
       try {
@@ -307,6 +311,15 @@ async function handleWorkersRestart() {
 }
 
 // ============================================================================
+// PANEL: NODE REGISTRY
+// ============================================================================
+
+async function handleNodesList() {
+  const { ok, data } = await apiFetch("/v1/nodes");
+  showResponse("nodes-response", data, ok);
+}
+
+// ============================================================================
 // PANEL: JOBS
 // ============================================================================
 // Jobs panel handlers will be added in Phase 003.
@@ -440,7 +453,7 @@ const WsEventTypes = [
   "job_completed",
   "job_failed",
   "job_cancelled",
-  "worker_status",
+  "worker_status_changed",
   "system_stats",
   "provisioning_progress",
 ];
@@ -521,6 +534,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const workersRestartBtn = document.getElementById("workers-restart-btn");
   if (workersRestartBtn) workersRestartBtn.addEventListener("click", handleWorkersRestart);
+
+  // Node Registry panel
+  const nodesListBtn = document.getElementById("nodes-list-btn");
+  if (nodesListBtn) nodesListBtn.addEventListener("click", handleNodesList);
 
   // Jobs panel
   document.getElementById("jobs-body").value = getTemplate("zit");

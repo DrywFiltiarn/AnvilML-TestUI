@@ -58,14 +58,21 @@
       <pre id="workers-response"></pre>
     </details>
 
+    <!-- Node Registry Panel -->
+    <details id="nodes-panel">
+      <summary>Node Registry</summary>
+      <button id="nodes-list-btn">List Node Types</button>
+      <pre id="nodes-response"></pre>
+    </details>
+
     <!-- Jobs Panel -->
     <details id="jobs-panel">
       <summary>Jobs</summary>
       <h3>Jobs</h3>
-      <label for="jobs-pipeline">Pipeline</label>
+      <label for="jobs-pipeline">Sampler preset</label>
       <select id="jobs-pipeline">
-        <option value="zit" selected>ZiT (distilled)</option>
-        <option value="sdxl">SDXL</option>
+        <option value="zit" selected>Distilled (4 steps, cfg 1.0)</option>
+        <option value="sdxl">Standard (20 steps, cfg 7.5)</option>
       </select>
       <button id="jobs-reset-btn">Reset Template</button>
       <label for="jobs-body">Request body (JSON)</label>
@@ -129,7 +136,7 @@
         <label><input type="checkbox" id="ws-filter-job-completed" checked> job_completed</label>
         <label><input type="checkbox" id="ws-filter-job-failed" checked> job_failed</label>
         <label><input type="checkbox" id="ws-filter-job-cancelled" checked> job_cancelled</label>
-        <label><input type="checkbox" id="ws-filter-worker-status" checked> worker_status</label>
+        <label><input type="checkbox" id="ws-filter-worker-status-changed" checked> worker_status_changed</label>
         <label><input type="checkbox" id="ws-filter-system-stats" checked> system_stats</label>
         <label><input type="checkbox" id="ws-filter-provisioning-progress" checked> provisioning_progress</label>
       </div>
