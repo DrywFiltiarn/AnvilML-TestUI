@@ -20,11 +20,21 @@ let lastArtifactUrl = null;
 // TEMPLATES
 // ============================================================================
 // Both presets submit the identical generic 8-node graph shape from
-// ANVILML_DESIGN.md Appendix B — v3 has no architecture-specific node
-// types (no ZitSampler/SdxlTextEncode). Only the Sampler node's
-// steps/cfg/seed inputs differ between a "distilled" few-step model
-// and a "standard" CFG-guided model. model_id values are placeholders;
-// the user must fill in real SHA256 model IDs from GET /v1/models.
+// ANVILML_DESIGN.md §10.3 / Appendix B.2 (verified against the AnvilML repo
+// HEAD). v4 has no architecture-specific node types (no ZitSampler/
+// SdxlTextEncode) — only the Sampler node's steps/cfg/seed inputs differ
+// between a "distilled" few-step model and a "standard" CFG-guided model.
+// model_id values are placeholders; the user must fill in real SHA256
+// model IDs from GET /v1/models.
+//
+// Field notes (crates/anvilml-core/src/types + ANVILML_DESIGN.md §10.3):
+//   - EmptyLatent.model is required in real mode — it dispatches to the
+//     loaded model's arch module's compute_latent_shape(). Mock mode
+//     ignores it, but the wire is always present so the same graph works
+//     unmodified against a real or mock-hardware server.
+//   - ClipTextEncode takes positive_text (required) / negative_text
+//     (optional) — not a bare "text" field.
+//   - Sampler takes an explicit clip input alongside model/conditioning/latent.
 function buildGraphTemplate(steps, cfg) {
   return JSON.stringify({
     "graph": {
@@ -32,11 +42,20 @@ function buildGraphTemplate(steps, cfg) {
         { "id": "model",   "type": "LoadModel",     "inputs": { "model_id": "<diffusion-model-id>" } },
         { "id": "vae",     "type": "LoadVae",       "inputs": { "model_id": "<vae-model-id>" } },
         { "id": "encoder", "type": "LoadClip",      "inputs": { "model_id": "<text-encoder-model-id>", "clip_type": "qwen3" } },
-        { "id": "latent",  "type": "EmptyLatent",   "inputs": { "width": 1024, "height": 1024 } },
-        { "id": "cond",    "type": "ClipTextEncode","inputs": { "clip": { "node_id": "encoder", "output_slot": "clip" }, "text": "<prompt>" } },
+        { "id": "latent",  "type": "EmptyLatent",   "inputs": {
+            "width": 1024,
+            "height": 1024,
+            "model": { "node_id": "model", "output_slot": "model" }
+          } },
+        { "id": "cond",    "type": "ClipTextEncode","inputs": {
+            "clip": { "node_id": "encoder", "output_slot": "clip" },
+            "positive_text": "<prompt>",
+            "negative_text": ""
+          } },
         { "id": "sampled", "type": "Sampler",       "inputs": {
             "model": { "node_id": "model", "output_slot": "model" },
             "conditioning": { "node_id": "cond", "output_slot": "conditioning" },
+            "clip": { "node_id": "encoder", "output_slot": "clip" },
             "latent": { "node_id": "latent", "output_slot": "latent" },
             "steps": steps,
             "cfg": cfg,

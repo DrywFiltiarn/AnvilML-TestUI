@@ -2,7 +2,7 @@
 
 **Repository:** `AnvilML-TestUI` (`https://github.com/DrywFiltiarn/AnvilML-TestUI.git`)
 **Project key (repos.json):** `anvilml-testui`
-**Version:** Rev 2 — 2026-06-09
+**Version:** Rev 3 — 2026-07-08 (job templates and §6 synced to AnvilML v4 generic node schema)
 **Status:** Draft
 
 ---
@@ -128,9 +128,11 @@ Fetched artifacts are rendered as `<img>` elements inline in the panel.
 
 - Connect / Disconnect buttons targeting `ws://[base-host]/v1/events`.
 - Scrolling event log: each event displayed as a formatted JSON block with timestamp.
-- Event type filter checkboxes: one per `WsEvent` variant
-  (`job.queued`, `job.started`, `job.progress`, `job.image_ready`, `job.completed`,
-  `job.failed`, `job.cancelled`, `worker.status`, `system.stats`, `provisioning.progress`).
+- Event type filter checkboxes: one per `WsEvent` variant, using the exact
+  `#[serde(tag = "type", rename_all = "snake_case")]` wire values
+  (`job_queued`, `job_started`, `job_progress`, `job_image_ready`, `job_completed`,
+  `job_failed`, `job_cancelled`, `worker_status_changed`, `system_stats`,
+  `provisioning_progress`).
 - Message counter per event type.
 - "Clear log" button.
 - Auto-scroll toggle.
@@ -159,60 +161,65 @@ Response display areas show raw JSON, syntax-highlighted via a minimal inline
 
 ## 6. Job Request Templates
 
-Both templates are JavaScript constant strings (not assembled from form inputs). They are
-pre-populated into `#jobs-body` when the pipeline selector changes or the Reset button is
-clicked. The operator edits them freely before submitting.
+Both templates are JavaScript constant strings built by the same `buildGraphTemplate()`
+helper (not assembled from form inputs). They are pre-populated into `#jobs-body` when
+the pipeline selector changes or the Reset button is clicked. The operator edits them
+freely before submitting.
 
-### 6.1 ZiT template (`TEMPLATE_ZIT`)
+Both presets submit the **identical generic 8-node graph shape** from
+`ANVILML_DESIGN.md §10.3` / Appendix B.2 — v4 has no architecture-prefixed node types
+(no `ZitLoadPipeline`, `ZitSampler`, `SdxlTextEncode`, etc.; §10.1 states this explicitly:
+"There is no `ZitLoadPipeline`, `Flux2KleinSampler`, or any architecture-prefixed node
+type"). `LoadModel`, `LoadVae`, `LoadClip`, `EmptyLatent`, `ClipTextEncode`, `Sampler`,
+`VaeDecode`, and `SaveImage` are wired identically for every model family; only the
+`Sampler` node's `steps`/`cfg` values differ between the two presets. `model_id` values
+are `"<placeholder>"` strings the operator replaces with real SHA256 model IDs from
+`GET /v1/models`.
 
-```json
-{
-  "graph": {
-    "nodes": [
-      { "id": "n0", "type": "ZitLoadPipeline",  "inputs": { "model_id": "<model_id>" } },
-      { "id": "n1", "type": "ZitTextEncode",    "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "prompt": "<prompt>" } },
-      { "id": "n2", "type": "ZitSampler",       "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "conditioning": { "node_id": "n1", "output_slot": "conditioning" }, "steps": 8, "seed": -1 } },
-      { "id": "n3", "type": "ZitDecode",        "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "latents": { "node_id": "n2", "output_slot": "latents" } } },
-      { "id": "n4", "type": "SaveImage",        "inputs": { "image": { "node_id": "n3", "output_slot": "image" }, "prompt": "<prompt>", "seed": { "node_id": "n2", "output_slot": "seed" }, "steps": 8 } }
-    ]
-  },
-  "settings": {
-    "seed": -1,
-    "steps": 8,
-    "guidance_scale": 0.0,
-    "width": 1024,
-    "height": 1024
-  }
-}
-```
-
-### 6.2 SDXL template (`TEMPLATE_SDXL`)
+### 6.1 Distilled preset (`TEMPLATE_ZIT`) — `steps: 4, cfg: 1.0`
 
 ```json
 {
   "graph": {
     "nodes": [
-      { "id": "n0", "type": "SdxlLoadPipeline", "inputs": { "model_id": "<model_id>" } },
-      { "id": "n1", "type": "SdxlTextEncode",   "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "prompt": "<prompt>", "negative_prompt": "" } },
-      { "id": "n2", "type": "SdxlSampler",      "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "conditioning": { "node_id": "n1", "output_slot": "conditioning" }, "steps": 20, "guidance_scale": 7.5, "seed": -1 } },
-      { "id": "n3", "type": "SdxlDecode",       "inputs": { "pipeline": { "node_id": "n0", "output_slot": "pipeline" }, "latents": { "node_id": "n2", "output_slot": "latents" } } },
-      { "id": "n4", "type": "SaveImage",        "inputs": { "image": { "node_id": "n3", "output_slot": "image" }, "prompt": "<prompt>", "seed": { "node_id": "n2", "output_slot": "seed" }, "steps": 20 } }
+      { "id": "model",   "type": "LoadModel",     "inputs": { "model_id": "<diffusion-model-id>" } },
+      { "id": "vae",     "type": "LoadVae",       "inputs": { "model_id": "<vae-model-id>" } },
+      { "id": "encoder", "type": "LoadClip",      "inputs": { "model_id": "<text-encoder-model-id>", "clip_type": "qwen3" } },
+      { "id": "latent",  "type": "EmptyLatent",   "inputs": { "width": 1024, "height": 1024, "model": { "node_id": "model", "output_slot": "model" } } },
+      { "id": "cond",    "type": "ClipTextEncode","inputs": { "clip": { "node_id": "encoder", "output_slot": "clip" }, "positive_text": "<prompt>", "negative_text": "" } },
+      { "id": "sampled", "type": "Sampler",       "inputs": { "model": { "node_id": "model", "output_slot": "model" }, "conditioning": { "node_id": "cond", "output_slot": "conditioning" }, "clip": { "node_id": "encoder", "output_slot": "clip" }, "latent": { "node_id": "latent", "output_slot": "latent" }, "steps": 4, "cfg": 1.0, "seed": -1 } },
+      { "id": "decoded", "type": "VaeDecode",     "inputs": { "vae": { "node_id": "vae", "output_slot": "vae" }, "latent": { "node_id": "sampled", "output_slot": "latent" } } },
+      { "id": "saved",   "type": "SaveImage",     "inputs": { "image": { "node_id": "decoded", "output_slot": "image" }, "seed": { "node_id": "sampled", "output_slot": "seed" } } }
     ]
   },
   "settings": {
-    "seed": -1,
-    "steps": 20,
-    "guidance_scale": 7.5,
-    "width": 1024,
-    "height": 1024
+    "device_preference": null
   }
 }
 ```
 
-Default values follow `ANVILML_DESIGN.md §14.6`: ZiT uses `steps=8, guidance_scale=0.0`
-(CFG-free); SDXL uses `steps=20, guidance_scale=7.5`.
+### 6.2 Standard preset (`TEMPLATE_SDXL`) — `steps: 20, cfg: 7.5`
 
----
+Identical graph shape to §6.1; only the `Sampler` node's `steps`/`cfg` inputs differ
+(`steps: 20, cfg: 7.5`).
+
+### 6.3 Field notes
+
+Per `crates/anvilml-core/src/types` and `ANVILML_DESIGN.md §10.3` on the AnvilML repo
+HEAD:
+
+- The top-level POST body is `SubmitJobRequest { graph: Value, settings: JobSettings }`.
+  `JobSettings` has exactly one field, `device_preference: Option<String>` — there is no
+  top-level `seed`/`steps`/`guidance_scale`/`width`/`height` in `settings`; those live
+  inside the relevant node's `inputs` instead (`EmptyLatent` for width/height, `Sampler`
+  for steps/cfg/seed).
+- `EmptyLatent.model` is required in real mode — it dispatches to the loaded model's arch
+  module's `compute_latent_shape()`, since the latent shape formula is architecture-
+  specific. Mock mode ignores it, but the wire is always present so the same graph works
+  unmodified against a real or `mock-hardware` server.
+- `ClipTextEncode` takes `positive_text` (required) and `negative_text` (optional) — not
+  a bare `text` field.
+- `Sampler` takes an explicit `clip` input alongside `model`/`conditioning`/`latent`.
 
 ## 7. Error Handling
 
